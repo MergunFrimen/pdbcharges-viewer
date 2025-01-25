@@ -32,6 +32,7 @@ import {
   Type,
 } from "./types";
 import { Color as MolstarColor } from "molstar/lib/mol-util/color";
+import { setSubtreeVisibility } from "molstar/lib/mol-plugin/behavior/static/state";
 
 export class ContextModel {
   private _plugin: PluginUIContext;
@@ -223,6 +224,9 @@ export class ContextModel {
     },
     surface: async () => {
       await this.updateType(this.surfaceTypeProps.type.name);
+    },
+    setWaterVisibility: (visible: boolean) => {
+      this.hideWater(visible);
     },
   };
   behavior = {
@@ -534,5 +538,23 @@ export class ContextModel {
         .getField("id")
         ?.toIntArray();
     return typeIds?.includes(typeId);
+  }
+
+  hideWater(visible: boolean) {
+    for (const structure of this.plugin.managers.structure.hierarchy.current
+      .structures) {
+      for (const component of structure.components) {
+        for (const representation of component.representations) {
+          const tags = representation.cell.transform.tags;
+          if (tags?.includes("water")) {
+            setSubtreeVisibility(
+              this.plugin.state.data,
+              representation.cell.transform.ref,
+              !visible
+            );
+          }
+        }
+      }
+    }
   }
 }
