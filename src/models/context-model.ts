@@ -119,6 +119,8 @@ export class ContextModel {
   }
 
   async load(url: string) {
+    this.state.loadingStatus.next({ kind: "loading" });
+
     await this.plugin.clear();
 
     const data = await this.plugin.builders.data.download(
@@ -147,6 +149,8 @@ export class ContextModel {
     await this.setInitialRepresentationState();
 
     this.sanityCheck();
+
+    this.state.loadingStatus.next({ kind: "idle" });
   }
 
   charges = {
@@ -221,6 +225,7 @@ export class ContextModel {
         other.includes(type.name)
       );
     },
+    hasWater: () => this.hasWater(),
     default: async () => {
       await this.updateType("default");
     },
@@ -389,6 +394,8 @@ export class ContextModel {
   }
 
   private async updateType(name: Type["name"]) {
+    this.state.loadingStatus.next({ kind: "loading" });
+
     await this.plugin.dataTransaction(async () => {
       for (const structure of this.plugin.managers.structure.hierarchy.current
         .structures) {
@@ -441,9 +448,13 @@ export class ContextModel {
       }
       this.updateGranularity(name);
     });
+
+    this.state.loadingStatus.next({ kind: "idle" });
   }
 
   private async updateColor(name: Color["name"], params: Color["params"] = {}) {
+    this.state.loadingStatus.next({ kind: "loading" });
+
     await this.plugin.dataTransaction(async () => {
       for (const structure of this.plugin.managers.structure.hierarchy.current
         .structures) {
@@ -489,6 +500,8 @@ export class ContextModel {
       }
       await this.updateFocusColorTheme(name, params);
     });
+
+    this.state.loadingStatus.next({ kind: "idle" });
   }
 
   private sanityCheck() {
@@ -561,5 +574,20 @@ export class ContextModel {
         }
       }
     }
+  }
+
+  hasWater() {
+    for (const structure of this.plugin.managers.structure.hierarchy.current
+      .structures) {
+      for (const component of structure.components) {
+        for (const representation of component.representations) {
+          const tags = representation.cell.transform.tags;
+          if (tags?.includes("water")) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
   }
 }
