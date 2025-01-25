@@ -190,8 +190,13 @@ export class ContextModel {
   };
 
   color = {
-    default: async () => {
-      await this.updateColor("default");
+    default: async (carbonColor: "chain-id" | "uniform") => {
+      await this.updateColor("default", {
+        carbonColor: {
+          name: carbonColor,
+          params: {},
+        },
+      });
     },
     alphaFold: async () => {
       await this.updateColor(PLDDTConfidenceColorThemeProvider.name);
