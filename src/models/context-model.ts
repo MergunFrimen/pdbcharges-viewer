@@ -316,6 +316,13 @@ export class ContextModel {
       name: GaussianSurfaceRepresentationProvider.name,
       params: {
         ...GaussianSurfaceRepresentationProvider.defaultValues,
+        smoothColors: {
+          name: "on",
+          params: {
+            resolutionFactor: 2,
+            sampleStride: 3,
+          },
+        },
       },
     },
     sizeTheme: {
