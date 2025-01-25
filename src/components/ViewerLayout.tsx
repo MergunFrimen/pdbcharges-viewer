@@ -6,7 +6,7 @@ import {
 } from "molstar/lib/mol-plugin-ui/plugin";
 import { SequenceView } from "./SequenceView";
 import { useBehavior } from "../hooks/use-behavior";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { ContextModel } from "../models/context-model";
 
 export function ViewerLayout({ context }: { context: ContextModel }) {
@@ -103,10 +103,14 @@ export function MolstarViewport({ context }: { context: ContextModel }) {
 
 export function MolstarSequence({ context }: { context: ContextModel }) {
   const warnings = useBehavior(context.state.warnings);
+  const residueIds = useMemo(
+    () => new Set(warnings?.map((w) => w.residue_id) ?? []),
+    [warnings]
+  );
 
   return (
     <PluginContextContainer plugin={context.plugin}>
-      <SequenceView warnings={warnings ?? new Set()} />
+      <SequenceView warnings={residueIds} />
     </PluginContextContainer>
   );
 }

@@ -28,6 +28,7 @@ import {
   AtomKey,
   Color,
   Representation3D,
+  ResidualWarning,
   Size,
   Type,
 } from "./types";
@@ -44,7 +45,7 @@ export class ContextModel {
     showControls: new BehaviorSubject<boolean>(false),
     isExpanded: new BehaviorSubject<boolean>(false),
 
-    warnings: new BehaviorSubject<Set<number> | undefined>(undefined),
+    warnings: new BehaviorSubject<ResidualWarning[] | undefined>(undefined),
   };
 
   get plugin(): PluginUIContext {
@@ -239,7 +240,9 @@ export class ContextModel {
       this.hideWater(visible);
     },
   };
+  
   behavior = {
+    setWarnings: (warnings: ResidualWarning[]) => this.state.warnings.next(warnings),
     focus: (key: AtomKey) => {
       const data =
         this.plugin.managers.structure.hierarchy.current.structures[0]
