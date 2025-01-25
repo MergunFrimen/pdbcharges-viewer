@@ -8,7 +8,6 @@ import {
 import { SbNcbrPartialChargesColorThemeProvider } from "molstar/lib/extensions/sb-ncbr/partial-charges/color";
 import { MmcifFormat } from "molstar/lib/mol-model-formats/structure/mmcif";
 import { Model, StructureSelection } from "molstar/lib/mol-model/structure";
-import { BuiltInTrajectoryFormat } from "molstar/lib/mol-plugin-state/formats/trajectory";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import "molstar/lib/mol-plugin-ui/skin/light.scss";
 import {
@@ -30,7 +29,6 @@ import {
   Color,
   Representation3D,
   Size,
-  TargetWebApp,
   Type,
 } from "./types";
 import { Color as MolstarColor } from "molstar/lib/mol-util/color";
@@ -119,11 +117,7 @@ export class ContextModel {
     this.state.isInitialized.next(true);
   }
 
-  async load(
-    url: string,
-    format: BuiltInTrajectoryFormat = "mmcif",
-    targetWebApp: TargetWebApp = "ACC2"
-  ) {
+  async load(url: string) {
     await this.plugin.clear();
 
     const data = await this.plugin.builders.data.download(
@@ -132,7 +126,7 @@ export class ContextModel {
     );
     const trajectory = await this.plugin.builders.structure.parseTrajectory(
       data,
-      format
+      "mmcif"
     );
     await this.plugin.builders.structure.hierarchy.applyPreset(
       trajectory,
@@ -140,14 +134,18 @@ export class ContextModel {
       {
         showUnitcell: false,
         representationPreset: "auto",
+        representationPresetParams: {
+          theme: {
+            globalName: this.elementSymbolColorProps.name,
+            carbonColor: "chain-id",
+          },
+        },
       }
     );
 
-    await this.setInitialRepresentationState(targetWebApp);
+    await this.setInitialRepresentationState();
 
-    if (format === "mmcif") {
-      this.sanityCheck();
-    }
+    this.sanityCheck();
   }
 
   charges = {
@@ -353,7 +351,7 @@ export class ContextModel {
     },
   };
 
-  private async setInitialRepresentationState(targetWebApp: TargetWebApp) {
+  private async setInitialRepresentationState() {
     this.defaultProps.clear();
     await this.plugin.dataTransaction(() => {
       for (const structure of this.plugin.managers.structure.hierarchy.current
@@ -365,14 +363,8 @@ export class ContextModel {
             const { type } = params;
             this.defaultProps.set(representation.cell.transform.ref, {
               type: type as Type,
-              colorTheme:
-                targetWebApp === "AlphaCharges"
-                  ? this.elementSymbolColorProps
-                  : (params.colorTheme as Color),
-              sizeTheme:
-                targetWebApp === "AlphaCharges"
-                  ? this.physicalSizeProps
-                  : (params.sizeTheme as Size),
+              colorTheme: this.elementSymbolColorProps,
+              sizeTheme: this.physicalSizeProps,
             });
           }
         }

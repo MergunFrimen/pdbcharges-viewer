@@ -27,13 +27,6 @@ export type AtomKey = {
     labelAtomId: string;
 };
 
-export type TargetWebApp = 'AlphaCharges' | 'ACC2';
-
-export type Extensions = {
-    MAQualityAssessment?: boolean;
-    SbNcbrPartialCharges?: boolean;
-};
-
 export type AsyncResult<E = string> =
   | { kind: "idle" }
   | { kind: "loading" }
