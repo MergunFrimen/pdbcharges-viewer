@@ -25,12 +25,6 @@ export type Size = {
   params: SizeTheme.BuiltInParams<SizeTheme.BuiltIn>;
 };
 
-export type AtomKey = {
-  labelCompId: string;
-  labelSeqId: number;
-  labelAtomId: string;
-};
-
 export type AsyncResult<E = string> =
   | { kind: "idle" }
   | { kind: "loading" }

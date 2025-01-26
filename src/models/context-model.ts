@@ -25,7 +25,6 @@ import { PhysicalSizeThemeProvider } from "molstar/lib/mol-theme/size/physical";
 import { BehaviorSubject, Observable, Subscription } from "rxjs";
 import {
   AsyncResult,
-  AtomKey,
   Color,
   Representation3D,
   ResidualWarning,
@@ -240,32 +239,29 @@ export class ContextModel {
       this.hideWater(visible);
     },
   };
-  
+
   behavior = {
-    setWarnings: (warnings: ResidualWarning[]) => this.state.warnings.next(warnings),
-    focus: (key: AtomKey) => {
+    setWarnings: (warnings: ResidualWarning[]) =>
+      this.state.warnings.next(warnings),
+    focus: (warning: ResidualWarning) => {
       const data =
         this.plugin.managers.structure.hierarchy.current.structures[0]
           .components[0].cell.obj?.data;
       if (!data) return;
 
-      const { labelCompId, labelSeqId, labelAtomId } = key;
-
       const selection = Script.getStructureSelection(
         (Q) =>
           Q.struct.generator.atomGroups({
-            "atom-test": Q.core.logic.and([
-              Q.core.rel.eq([
-                Q.struct.atomProperty.macromolecular.label_comp_id(),
-                labelCompId,
-              ]),
-              Q.core.rel.eq([
-                Q.struct.atomProperty.macromolecular.label_seq_id(),
-                labelSeqId,
-              ]),
-              Q.core.rel.eq([
-                Q.struct.atomProperty.macromolecular.label_atom_id(),
-                labelAtomId,
+            "atom-test": Q.core.logic.or([
+              Q.core.logic.and([
+                Q.core.rel.eq([
+                  Q.struct.atomProperty.macromolecular.auth_asym_id(),
+                  warning.chain_id,
+                ]),
+                Q.core.rel.eq([
+                  Q.struct.atomProperty.macromolecular.auth_seq_id(),
+                  warning.residue_id,
+                ]),
               ]),
             ]),
           }),
@@ -277,32 +273,6 @@ export class ContextModel {
       this.plugin.managers.interactivity.lociSelects.selectOnly({ loci });
       this.plugin.managers.camera.focusLoci(loci);
       this.plugin.managers.structure.focus.setFromLoci(loci);
-    },
-    focusRange: (range: { residueStart: number; residueEnd: number }) => {
-      const data =
-        this.plugin.managers.structure.hierarchy.current.structures[0]
-          .components[0].cell.obj?.data;
-      if (!data) return;
-
-      const { residueStart, residueEnd } = range;
-
-      const selection = Script.getStructureSelection(
-        (Q) =>
-          Q.struct.generator.atomGroups({
-            "residue-test": Q.core.rel.inRange([
-              Q.struct.atomProperty.macromolecular.label_seq_id(),
-              residueStart,
-              residueEnd,
-            ]),
-          }),
-        data
-      );
-
-      const loci = StructureSelection.toLociWithSourceUnits(selection);
-      // this.plugin.managers.interactivity.lociHighlights.highlightOnly({ loci });
-      this.plugin.managers.interactivity.lociSelects.selectOnly({ loci });
-      this.plugin.managers.camera.focusLoci(loci);
-      // this.plugin.managers.structure.focus.setFromLoci(loci);
     },
   };
 
