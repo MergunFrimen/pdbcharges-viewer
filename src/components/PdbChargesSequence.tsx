@@ -11,7 +11,7 @@ type PdbChargesSequenceProps = {
 
 export class PdbChargesSequence extends Sequence<PdbChargesSequenceProps> {
   colors = {
-    warning: "rgb(255, 123, 0)",
+    warning: "rgb(255, 0, 0)",
     highlighted: "rgb(255, 102, 153)",
     selected: "rgb(51, 255, 25)",
   };
@@ -30,6 +30,9 @@ export class PdbChargesSequence extends Sequence<PdbChargesSequenceProps> {
       const backgroundColor = this.getColor(markerArray[i], i);
       if (span.style.backgroundColor !== backgroundColor)
         span.style.backgroundColor = backgroundColor;
+      if (backgroundColor === this.colors.warning) {
+        span.style.color = "white";
+      }
     }
   }
 
